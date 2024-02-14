@@ -1,0 +1,56 @@
+This is the code necessary to reproduce the results in the paper "Quantifying Ideological Polarization on a Network Using Effective Resistance", currently under review. The scripts generate the outputs and figures of the paper. If the script requires a data source, this file details how to recover it. We do not own the rights of redistributing the data, which are held by Twitter, George Washington University, and Voteview.com. 
+
+To run the scripts you'll need the following programs/libraries:
+- Python 3.10.4. Libraries: pandas 1.4.3, scipy 1.8.1, numpy 1.22.4, networkx 2.8.5, sklearn 1.1.1, graph_tool 2.45, matplotlib 3.5.2.
+- Gnuplot 5.4 patchlevel 2 (not really required, it's only for plotting).
+- Cytoscape 3.9.1 to reproduce the network visualizations (using Colorbrewer's color palettes RdBu for diverging scales, and Set1 for qualitative ones, prefuse force directed layout).
+
+!!!NOTE!!! In some cases the polarization estimation will not work, throwing a "numpy.linalg.LinAlgError: SVD did not converge". This is _NOT_ a problem in the method, it is entirely dependent on the numpy version (and even the OS's). If you have different versions of numpy or even the same version of numpy on a different OS configuration, different networks will fail randomly. In the configuration above, for instance, the 109th Congress will fail, but will work entirely normally on a different numpy version, which will fail on a different Congress network.
+
+Note that all *.gp script files are optional (they only generate figures), while all the important results are created via the *.py files.
+
+- 01_figs_3_4_5_tab_s1.py will generate all the data required to reproduce Figs 3 to 5 in the main paper and Tab 1 in the Supplementary Information. You can use 02_figs_3_4_5_subplots.gp to generate the KDE of the neighbor plots and the SIR boxplots. Note that the script requires a numeric parameter with the ID of the run. This allows you to run the script in parallel a number of times. For instance, if you have access to a Unix terminal, you can type:
+
+printf "%s\n" {1..25} | xargs -n 1 -P 16 python3 01_figs_3_4_5_tab_s1.py
+
+This will make 16 parallel processes running 25 independently initialized runs, each with its own numeric id. You will have to then aggregate the outputs. WARNING: this generates A LOT of files (specifically 25 X 6 X 5 X 7 X 2 files for the neighbor and SIR plot, plus 25 files in total with the numeric results from delta, assortativity, and RWC). So make sure you can handle this.
+
+The numeric outputs will be stored in scores_run*.csv files. They are 6 tab-separated columns containing: mu, p_out, n, delta, assortativity, and rwc. If you concatenate them in a single pandas dataframe df, then you can simply run
+
+df.groupby(by = ["mu", "p_out", "n"]).agg(["mean", "sem"]).reset_index()
+
+to get Table S1.
+
+- 03_figs_6_7.py and 04_figs_6_7.gp run the code required to reproduce Figures 6 and 7. It prints to standard output the delta value, then makes the files necessary to create the histograms (files "*_user_scores_hist.csv") and the network visualizations (files "*_edgelist_wpol.csv"). Note that this script requires the presence of the edge list data in files *_edgelist.csv, and the user opinion scores in files *_user_scores.csv. To generate these you'll have to recover the tweet ids from https://drive.google.com/drive/folders/1oYM3Je87LBeqA3rmWgSmPOzB4dWKmC_E and https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/UCJUUZ. Then you have to hydrate them, estimate users' opinion via data from mediabiasfactcheck.com, and the network from the following relationships among them.
+
+- 05_fig_8.py and 06_fig_8_subplots.gp will together generate the network data, and the histograms and polarization timeline to reproduce Fig 8 in the paper. Note that they require you to put in the folder the data from the files HSall_votes.csv and HSall_members.csv that you can get from voteview.com (specifically: https://voteview.com/data). The output "congress_pol.csv" is a two column tab-separated file with the congress id in the first column and the delta value in the second column. "congress*_nodes.csv" contain the NOMINATE score for the nodes in a given congress. "congress*_edges.csv" contain the (undirected) edgelists for each congress. "*_nodes_hist.csv" count how many congressmen have a given NOMINATE score in a given congress.
+
+- 07_fig_9.py and 08_fig_9_hists.gp will together generate the network data and the histograms to reproduce Fig 9 in the paper. The output "grid_graph_ts" is a matrix whose rows are the graph's nodes and the columns is the time step. Each entry is the o value for the node at the given time step. The output "grid_graph_ts_hists" is a matrix whose rows are bins of o values and the columns are time steps. The cells count how many nodes are in the o value bin at a given time step.
+
+- 09_fig_s1.py produces file assort_sensitivity.csv, which connects p_out with its assortativity value to reproduce Figure S1.
+
+- 10_fig_s2.py prints to standard output the polarization score of chain graphs from 2 to 250 nodes, like in Figure S2.
+
+- 11_fig_s3.py produces file "block_delta.csv", which has the clique size on the first column and the polarization value in the second column. It is the basis for Figure S3.
+
+- 12_fig_s4.py produces files "removeedges_2blocks.csv" and "balance_2blocks.csv" which are two-column tab-separated files encoding the data behind the plots in Figure S4.
+
+- 13a_fig_s5l.py and 13b_fig_s5r.py are the scripts to reproduce each panel of Figure S13. The first script should be run in parallel with a run id parameter passed as command line argument, to generate many random networks and test the relationship between density and polarization score. The second script generates "fragmentation.csv", connecting the number of communities with their polarization score.
+
+- 14_fig_s6.py produces the files to reconstruct Figure S6. These are the same as the ones output by 01_figs_3_4_5_tab_s1.py, but this time it varies the standard deviation of the opinion vector (which in the originale xperiment is set fixed at 0.2).
+
+- 15_fig_s7.py generates "purity.csv", which connects a network's communities purity score with the resulting opinion polarization score.
+
+- 16_fig_s8.py produces 140 files. Each file is tab-separated and has 5 columns. The first three are parameters mu, p_out, and n from the main paper. The last two are the time step t value when the system reaches equilibrium and the delta polarization value. Each file has 10 rows, each of which is the result of an independently initialized run. Since each parameter combination takes a while to run, it is highly recommended to run this script in a parallelized fashion. If you have access to a Unix terminal, you can type:
+
+awk 'BEGIN{for(i=0;i<=3;i++){for(j=0;j<=4;j++){for(k=1;k<=7;k++){print i,j,k}}}}' | xargs -n 3 -P 16 python3 16_fig_s8.py
+
+This will make 16 parallel processes run all 140 valid parameters combinations. Then you can aggregate them by concatenating the csv output files in a single pandas dataframe.
+
+- 17_tab_s2.py runs the same experiment as 01_figs_3_4_5_tab_s1.py, but only for the multipolar version of our measure. The scores should be aggregated in the same way as the aggregation used for the 01 script, to generate Table S2.
+
+- 18_tabs_s3_s4.py prints the Latex code for Tables S2 and S3 containing some simple summary statistics of the Twitter and Congress networks. It assumes to find the edge list data in the *_edgelist.csv files, and the opinion value for each user in the *_user_scores.csv files (for Twitter); and *_edges.csv and *_nodes.csv files for the Congress networks.
+
+- 19_fig_s9.py calculates the pearson and spearman correlations between p_out and mu as estimated for the real world networks in our paper. You will need the network files in the folder that you used to run 18_tabs_s3_s4.py.
+
+- 20_fig_s10_tabs_s5_s6.py allows the reproducibility of the abortion Twitter network analysis. It prints to standard output Tables S4 and S5. It also creates the file "abortion_communities.csv" with the community assignment for each node in the abortion network. The script requires the files "abortion_edgelist.csv" and "abortion_user_scores.csv", containing the edgelist and the opinion scores for the abortion network -- just like the 03_figs_6_7.py script. 
