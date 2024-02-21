@@ -1,3 +1,8 @@
+"""
+A modified version of torch_nvd.py, originally provided by Michele Coscia. 
+The original can be found at /resources/torch_nvd/torch_nvd.py.
+"""
+
 import torch, torch_geometric
 import numpy as np
 import pandas as pd
@@ -108,7 +113,7 @@ def ideological_manifold(tensor, Linv = None, embedding = None):
 # This is from Martin-Gutierrez et al. 2023.
 # As is, it is simplistic and ignores G. But it makes full use of the opinion data we have.
 # Alternatively, we can throw out most of o and use G to infer opinion scores rather than using the actual ones.
-def total_variation(tensor):
+def total_variation(tensor, Linv = None):
    norm_factor = tensor.node_vects.shape[0] / tensor.node_vects.shape[1]
    return torch.trace(torch.cov(tensor.node_vects)).cpu().numpy() / norm_factor # figure out how to normalize so that it gets more evenly spread between 0 and 1
 
