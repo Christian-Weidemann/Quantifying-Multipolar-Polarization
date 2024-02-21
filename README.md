@@ -11,7 +11,7 @@ The goal of this project is to develop a quantitative measure for assessing mult
 To use this code, follow the steps below:
 
 1. Clone this repository to your local machine.
-2. Install the required dependencies by running `pip install -r requirements.txt`, depending on the programming language used.
+2. To install the required dependencies with windows command prompt, run `pip install -r requirements.txt`.
 
 ## License
 
