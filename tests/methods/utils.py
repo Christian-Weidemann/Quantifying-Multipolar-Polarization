@@ -29,7 +29,9 @@ def ideo_make_G(n_comms, nodes_per_comm, p):
          c1_c2_edges = random.sample(c1_c2_edges, n_edges_to_rewire[c1, c2])
          G.remove_edges_from(internal_c1_edges)
          G.add_edges_from(c1_c2_edges)
-   return nx.relabel_nodes(G, {n: n + 1 for n in G.nodes})
+
+   # nx.relabel_nodes(G, {n: n + 1 for n in G.nodes})  # Possible bug from an old version of the code
+   return G
 
 # The overall logic is that coomunities that are closer to each other have more similar opinions
 # Current issue is that n and p_out are overwhelmed by shift, which seems to be the only things that matters
