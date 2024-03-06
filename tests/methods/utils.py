@@ -30,7 +30,14 @@ def ideo_make_G(n_comms, nodes_per_comm, p):
          G.remove_edges_from(internal_c1_edges)
          G.add_edges_from(c1_c2_edges)
 
-   # nx.relabel_nodes(G, {n: n + 1 for n in G.nodes})  # Possible bug from an old version of the code
+   # if G is disconnected, add a random edge between each successive component
+   # this can happen if nodes_per_comm or entries in p are too low
+   if not nx.is_connected(G):
+      components = list(nx.connected_components(G))
+      for component in range(len(components)-1):
+         G.add_edge(random.choice(list(components[component])), random.choice(list(components[component+1])))
+   assert nx.is_connected(G)
+
    return G
 
 # The overall logic is that coomunities that are closer to each other have more similar opinions
