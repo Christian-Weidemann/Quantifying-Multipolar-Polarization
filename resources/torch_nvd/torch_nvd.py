@@ -85,7 +85,7 @@ def affective_noline(tensor, Linv = None):
 
 def _manifold(tensor, Linv):
    ideology_distances = _pairwise_distances(tensor, Linv).double().cpu().numpy()
-   ideology_distances = ideology_distances + ideology_distances.T
+   ideology_distances = ideology_distances + ideology_distances.T  # making triangle symmetic
    # PCA is more stable than TSNE and actually solves the dimension problem of correlated ideologies
    # However it seems to find difficult to space properly the nodes in the space, the distributions are much more questionable than TSNE
    reducer = PCA(n_components = 1)

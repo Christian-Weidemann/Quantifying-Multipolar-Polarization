@@ -67,7 +67,12 @@ def ge(src, trg, Linv):
    Considers graph topology from the pseudo-inverse of the Laplacian, Linv.
    """
    diff = src - trg
-   return torch.sqrt((diff * torch.matmul(Linv, diff.T)).sum())
+   # if diff has dimension other than 1, use diff.mT, else use diff.T
+   if len(diff.shape) == 1:
+      diff_T = diff.T
+   else:
+      diff_T = diff.mT
+   return torch.sqrt((diff * torch.matmul(Linv, diff_T)).sum())
 
 def pairwise_average(tensor):
    """
@@ -83,11 +88,11 @@ def manifold(tensor, Linv, method = "pca"):
    ideology_distances = ideology_distances + ideology_distances.T
 
    if method == "pca":
-      reducer = PCA(n_components = 1)
+      reducer = PCA(n_components = 1, svd_solver = "full")
       embedding = reducer.fit_transform(ideology_distances)  # Fitting and transforming the distances to 1D space
 
    elif method == "mds_euclidean":
-      reducer = MDS(n_components = 1)  # , dissimilarity = "euclidean"
+      reducer = MDS(n_components = 1, n_init = 1, dissimilarity = "euclidean")  # uses euclidean distance as dissimilarity measure, n_init=1 means only one random initialization
 
       # Ignoring warnings while fitting the MDS model
       with warnings.catch_warnings():

@@ -30,15 +30,26 @@ def ideo_make_G(n_comms, nodes_per_comm, p):
          G.remove_edges_from(internal_c1_edges)
          G.add_edges_from(c1_c2_edges)
 
-   # if G is disconnected, add a random edge between each successive component
-   # this can happen if nodes_per_comm or entries in p are too low
-   if not nx.is_connected(G):
-      components = list(nx.connected_components(G))
-      for component in range(len(components)-1):
-         G.add_edge(random.choice(list(components[component])), random.choice(list(components[component+1])))
+   return G
+
+def make_community_graph(n_comms, nodes_per_comm):
+   comm = nx.complete_graph(nodes_per_comm)
+   G = nx.Graph()
+   for _ in range(n_comms):
+      G = nx.disjoint_union(G, comm)
+
+   components = list(nx.connected_components(G))
+
+   # add a random edge between each pair of components
+   # ensuring that no node is on more than one added edge
+   for i in range(len(components)):
+      G.add_edge(max(components[i]), min(components[(i + 1) % len(components)]))
+
    assert nx.is_connected(G)
 
    return G
+
+
 
 # The overall logic is that coomunities that are closer to each other have more similar opinions
 # Current issue is that n and p_out are overwhelmed by shift, which seems to be the only things that matters
