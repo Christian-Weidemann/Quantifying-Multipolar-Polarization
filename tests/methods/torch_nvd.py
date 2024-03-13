@@ -37,6 +37,13 @@ def make_tensor(G, df):
 
    return tensor
 
+def effective_resistance(tensor):
+   """
+   Effective resistance
+   """
+   Linv = _Linv(tensor)
+   pinv_diagonal = torch.diagonal(Linv)
+   return pinv_diagonal.unsqueeze(0) +  pinv_diagonal.unsqueeze(1) - 2 * Linv
 
 def _Linv(tensor):
    L_ei, Lew = torch_geometric.utils.get_laplacian(tensor.edge_index)
