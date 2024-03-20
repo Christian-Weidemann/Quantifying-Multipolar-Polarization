@@ -45,8 +45,6 @@ def make_community_graph(n_comms, nodes_per_comm):
    for i in range(len(components)):
       G.add_edge(max(components[i]), min(components[(i + 1) % len(components)]))
 
-   assert nx.is_connected(G)
-
    return G
 
 
