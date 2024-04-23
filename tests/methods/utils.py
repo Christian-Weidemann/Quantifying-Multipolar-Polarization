@@ -4,6 +4,19 @@ import pandas as pd
 import networkx as nx
 from scipy.stats import truncnorm
 
+import matplotlib.pyplot as plt
+import os
+
+FIGURE_PATH = "figures/"
+
+
+
+def save_figure(path, overwrite=False):
+    if overwrite or not os.path.exists(FIGURE_PATH+path):
+        plt.savefig(FIGURE_PATH+path, bbox_inches="tight")
+        print("Figure saved.")
+
+
 def ideo_make_p(p_out, n_comms, intercon):
    p = np.full((n_comms, n_comms), p_out)
    np.fill_diagonal(p, 0)                                                # Save the sum of p entries, this must be constant to ensure same expected # of edges
