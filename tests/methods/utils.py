@@ -7,17 +7,30 @@ from scipy.stats import truncnorm
 import matplotlib.pyplot as plt
 import os
 
-FIGURE_PATH = "figures/"
+FIGURES_PATH = "figures/"
 
 
+def save_figure(figure_name, figure_folder=None, overwrite=False, dpi=600):
 
-def save_figure(path, overwrite=False):
-    if overwrite or not os.path.exists(FIGURE_PATH+path):
-        plt.savefig(FIGURE_PATH+path, bbox_inches="tight")
-        print("Figure saved.")
+   if figure_folder is None:
+      figure_path = FIGURES_PATH + figure_name
+   else:
+      folder_path = FIGURES_PATH + figure_folder
+      if not os.path.exists(folder_path):
+         os.makedirs(folder_path)
+      figure_path = folder_path + figure_name
+
+   if overwrite or not os.path.exists(figure_path):
+      plt.savefig(figure_path, bbox_inches="tight", dpi=dpi)
+      print("Figure saved.")
+   else:
+      print("Figure already exists.")
 
 
 def ideo_make_p(p_out, n_comms, intercon):
+   """
+   not by me
+   """
    p = np.full((n_comms, n_comms), p_out)
    np.fill_diagonal(p, 0)                                                # Save the sum of p entries, this must be constant to ensure same expected # of edges
    for col in range(n_comms):                                              # For every column...
@@ -27,6 +40,9 @@ def ideo_make_p(p_out, n_comms, intercon):
    return p
 
 def ideo_make_G(n_comms, nodes_per_comm, p):
+   """
+   not by me
+   """
    comm = nx.complete_graph(nodes_per_comm)
    G = nx.Graph()
    for _ in range(n_comms):
@@ -67,6 +83,9 @@ def make_community_graph(n_comms, nodes_per_comm):
 # One potential solution is to simplify the setup and set to zero all opinions outside the community
 # But this might lose the multidimensional aspect (closer communities should have lower opinion difference)
 def ideo_make_o(n_comms, nodes_per_comm, shift):
+   """
+   not by me
+   """
    o = pd.DataFrame()
    scale = 0.1
    loc_out = 0.5 - (shift / 2)
