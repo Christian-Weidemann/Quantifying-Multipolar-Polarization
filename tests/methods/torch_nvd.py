@@ -109,7 +109,7 @@ def manifold(tensor, Linv, method = "pca"):
    elif method == "mds_euclidean":
       # uses euclidean distance as dissimilarity measure, n_init=1 means only one random initialization
       reducer = MDS(n_components = 1, n_init = 1, dissimilarity = "euclidean")  
-
+      
       with warnings.catch_warnings():  # Ignoring warnings while fitting the MDS model
          warnings.simplefilter('ignore')
          embedding = reducer.fit_transform(ideology_distances)  # Fitting and transforming the distances to 1D space
@@ -118,7 +118,7 @@ def manifold(tensor, Linv, method = "pca"):
       # uses effective resistance as dissimilarity measure for MDS
       reducer = MDS(n_components = 1, n_init = 1, dissimilarity = "precomputed")
       effective_resistances = _er(tensor, Linv).cpu().numpy()
-      embedding = reducer.fit_transform(effective_resistances)
+      embedding = reducer.fit_transform(ideology_distances, effective_resistances)
 
    else:
       raise ValueError("Method must be either 'pca' 'mds_er' or 'mds_euclidean', not '{method}'.")
@@ -165,4 +165,3 @@ def total_variation(tensor, Linv = None):
    """
    norm_factor = tensor.node_vects.shape[0] / tensor.node_vects.shape[1]
    return torch.trace(torch.cov(tensor.node_vects)).cpu().numpy() / norm_factor
-

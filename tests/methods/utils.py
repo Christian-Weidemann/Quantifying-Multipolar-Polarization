@@ -3,11 +3,30 @@ import numpy as np
 import pandas as pd
 import networkx as nx
 from scipy.stats import truncnorm
-
+import seaborn as sns
+from matplotlib.colors import ListedColormap
 import matplotlib.pyplot as plt
 import os
 
 FIGURES_PATH = "figures/"
+
+
+def qualitative_cmap(n):
+    # tab10 colormap
+    cmap = sns.color_palette("tab10", n)
+    cmap = list(cmap.as_hex())
+    random.shuffle(cmap)
+    return ListedColormap(cmap)
+
+
+def bgr_cmap():
+    palette_tab10 = sns.color_palette("tab10", 10)
+    blue = palette_tab10[0]
+    red = palette_tab10[3]
+    green = palette_tab10[2]
+    palette = sns.color_palette([blue, green, red])
+    cmap = ListedColormap(palette.as_hex())
+    return cmap
 
 
 def save_figure(figure_name, figure_folder=None, overwrite=False, dpi=600):
@@ -58,6 +77,18 @@ def ideo_make_G(n_comms, nodes_per_comm, p):
          c1_c2_edges = random.sample(c1_c2_edges, n_edges_to_rewire[c1, c2])
          G.remove_edges_from(internal_c1_edges)
          G.add_edges_from(c1_c2_edges)
+
+   return G
+
+def stochastic_block_model(n_comms, nodes_per_comm, p_in, p_out):
+
+   p = np.full((n_comms, n_comms), p_out)
+   np.fill_diagonal(p, p_in)
+
+   G = nx.stochastic_block_model(sizes = [nodes_per_comm] * n_comms, p = p)
+
+   while nx.number_connected_components(G) > 1:  # Ensure that the graph is connected                               
+      G = nx.stochastic_block_model(sizes = [nodes_per_comm] * n_comms, p = p)
 
    return G
 
