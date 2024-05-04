@@ -1,6 +1,7 @@
 # Quantifying Multipolar Polarization
+by Christian Weidemann
 
-This repository contains the code for my bachelor project titled "Quantifying Multipolar Polarization". 
+This repository contains the code for my bachelor project, and enables reproduction of findings and visualizations. 
 
 ## Overview
 
@@ -12,8 +13,4 @@ To use this code, follow the steps below:
 
 1. Clone this repository to your local machine.
 2. To install the required dependencies with windows command prompt, run `pip install -r requirements.txt`.
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
 
