@@ -15,12 +15,12 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 def make_tensor(G, df):
-   """
-   Not by me.
-   """
 
    if len(G.nodes) < 2:
       raise ValueError("Graph must have at least two nodes")
+   
+   # Normalize opinions (columns of df) to sum to 1, fill NaNs with 0 (the case of zero-sum column)
+   df = df.div(df.sum(), axis=1).fillna(0)
 
    edge_index = [[], []]
    edge_attribute_names = list(list(G.edges(data = True))[0][2].keys())
@@ -98,49 +98,32 @@ def pairwise_average(tensor):
    return torch.sqrt(distance_matrix.sum() / binom(tensor.node_vects.shape[1], 2)).cpu().numpy().tolist()
 
 
-def manifold(tensor, Linv, method = "pca"):
-   ideology_distances = _pairwise_distances(tensor, Linv).double().cpu().numpy()
-   ideology_distances = ideology_distances + ideology_distances.T
+def _manifold(tensor, embedding):
 
-   if method == "pca":
-      reducer = PCA(n_components = 1, svd_solver = "full")
-      embedding = reducer.fit_transform(ideology_distances)  # Fitting and transforming the distances to 1D space
-
-   elif method == "mds_euclidean":
-      # uses euclidean distance as dissimilarity measure, n_init=1 means only one random initialization
-      reducer = MDS(n_components = 1, n_init = 1, dissimilarity = "euclidean")  
-      
-      with warnings.catch_warnings():  # Ignoring warnings while fitting the MDS model
-         warnings.simplefilter('ignore')
-         embedding = reducer.fit_transform(ideology_distances)  # Fitting and transforming the distances to 1D space
-
-   elif method == "mds_er":
-      # uses effective resistance as dissimilarity measure for MDS
-      reducer = MDS(n_components = 1, n_init = 1, dissimilarity = "precomputed")
-      effective_resistances = _er(tensor, Linv).cpu().numpy()
-      embedding = reducer.fit_transform(ideology_distances, effective_resistances)
-
-   else:
-      raise ValueError("Method must be either 'pca' 'mds_er' or 'mds_euclidean', not '{method}'.")
-
-   embedding = torch.tensor(embedding).double().to(device)  # Converting the embedding to a tensor and moving it to the device
-   embedding = torch.mm(tensor.node_vects, embedding)  # Projecting the opinion vectors to the 1D space
-   embedding = (embedding - embedding.min()) / (embedding.max() - embedding.min())  # min-max normalization to [0,1]
-
-   return torch.sqrt(torch.mm(embedding.T, torch.mm(Linv, embedding))).cpu().numpy()[0][0] # GE distance between the below and above mean opinions on the 1D embedding
-
-
-def PCA_manifold(tensor):
    Linv = _Linv(tensor)
-   return manifold(tensor, Linv, method = "pca")
+
+   # Converting the embedding to a tensor and moving it to the device
+   embedding = torch.tensor(embedding).double().to(device)  
+
+   # Compute the GE distance between the above- and below-mean sides of the embedding (?)
+   dist = torch.sqrt(torch.mm(embedding.T, torch.mm(Linv, embedding))).cpu().numpy()[0][0]
+
+   return dist
+
+def PC_manifold(tensor):
+   opinion_matrix = tensor.node_vects.cpu().numpy()
+   reducer = PCA(n_components = 1, svd_solver = "arpack")
+   embedding = reducer.fit_transform(opinion_matrix)
+   return _manifold(tensor, embedding)
    
-def MDS_euclidean_manifold(tensor):
-   Linv = _Linv(tensor)
-   return manifold(tensor, Linv, method = "mds_euclidean")
+def MDS_manifold(tensor):
+   opinion_matrix = tensor.node_vects.cpu().numpy()
+   reducer = MDS(n_components = 1, n_init = 1, dissimilarity = "euclidean")
+   with warnings.catch_warnings():  # Ignoring warnings while fitting the MDS model
+      warnings.simplefilter('ignore')
+      embedding = reducer.fit_transform(opinion_matrix)
+   return _manifold(tensor, embedding)
 
-def MDS_er_manifold(tensor):
-   Linv = _Linv(tensor)
-   return manifold(tensor, Linv, method = "mds_er")
 
 def avg_dist_to_mean(tensor):
    """

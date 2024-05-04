@@ -7,14 +7,14 @@ import matplotlib.pyplot as plt
 import tests.methods.torch_nvd as nvd
 import random
 
+# Seed for reproducibility of visualizations / random graph generation
 random.seed(0)
 
 metrics = [('APD', nvd.pairwise_average), 
            ('ADM', nvd.avg_dist_to_mean), 
-           ('PC', nvd.PCA_manifold), 
-           ('MDS_eu', nvd.MDS_euclidean_manifold),
-           ('MDS_er', nvd.MDS_er_manifold),
-           ('TV', nvd.total_variation)]
+           ('PC', nvd.PC_manifold), 
+           ('MDS', nvd.MDS_manifold),
+           ('TV', nvd.total_variation)] 
 
 local_tests = [('Chains', nx.path_graph), 
                 ('Complete graphs', nx.complete_graph),
@@ -22,13 +22,13 @@ local_tests = [('Chains', nx.path_graph),
 
 local_num_nodes_range = range(6, 13, 2)
 
-random_run_metrics = [nvd.MDS_euclidean_manifold, nvd.MDS_er_manifold]
+random_run_metrics = [nvd.MDS_manifold]
 
 # Number of MDS runs with random initializations
 mds_runs = 50
 
 # Number of random SBM graph initializations
-num_runs = 20
+SBM_runs = 10
 
 # Set look of networks
 node_size = 50
@@ -38,7 +38,10 @@ local_edge_alpha = 0.5
 global_edge_width = 1
 global_edge_alpha = 0.5
 
-# set matplotlib font to Arial with medium weight
+# matplotlib font and text settings
 plt.rcParams['font.family'] = 'sans-serif'
 plt.rcParams['font.sans-serif'] = 'Arial'
 plt.rcParams['font.weight'] = 'medium'
+
+labelpad = 20
+fontsize = 12

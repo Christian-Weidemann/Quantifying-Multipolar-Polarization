@@ -10,23 +10,37 @@ import os
 
 FIGURES_PATH = "figures/"
 
+def cmap(cmap_type, n=10, as_colormap=True, shuffle=True):
 
-def qualitative_cmap(n):
-    # tab10 colormap
-    cmap = sns.color_palette("tab10", n)
-    cmap = list(cmap.as_hex())
-    random.shuffle(cmap)
-    return ListedColormap(cmap)
+   palette_tab10 = sns.color_palette("tab10", n)
+   blue = '#1f77b4'
+   red = '#d62728'
+   grey = '#d9d2dd'
+   green = '#2ca02c'
 
 
-def bgr_cmap():
-    palette_tab10 = sns.color_palette("tab10", 10)
-    blue = palette_tab10[0]
-    red = palette_tab10[3]
-    green = palette_tab10[2]
-    palette = sns.color_palette([blue, green, red])
-    cmap = ListedColormap(palette.as_hex())
-    return cmap
+   if cmap_type == "bgr":
+      colors = [blue, green, red]
+      cmap = sns.blend_palette(colors, n_colors=len(colors), as_cmap=as_colormap)
+   
+   elif cmap_type == "br":
+      colors = [blue, grey, red]
+      cmap = sns.blend_palette(colors, n_colors=len(colors), as_cmap=as_colormap)
+
+   elif cmap_type == "qualitative":
+      cmap = list(palette_tab10.as_hex())
+      if shuffle:
+         random.shuffle(cmap)
+      if as_colormap:
+         cmap = ListedColormap(cmap)
+
+   elif cmap_type == "colors":
+      cmap = [blue, red, green, grey]
+         
+   else:
+      raise ValueError("Invalid cmap_type")
+   
+   return cmap
 
 
 def save_figure(figure_name, figure_folder=None, overwrite=False, dpi=600):
@@ -37,13 +51,14 @@ def save_figure(figure_name, figure_folder=None, overwrite=False, dpi=600):
       folder_path = FIGURES_PATH + figure_folder
       if not os.path.exists(folder_path):
          os.makedirs(folder_path)
+         print(f"Folder created at {folder_path}")
       figure_path = folder_path + figure_name
 
    if overwrite or not os.path.exists(figure_path):
       plt.savefig(figure_path, bbox_inches="tight", dpi=dpi)
-      print("Figure saved.")
+      print("Figure saved")
    else:
-      print("Figure already exists.")
+      print("Figure already exists")
 
 
 def ideo_make_p(p_out, n_comms, intercon):
@@ -80,15 +95,30 @@ def ideo_make_G(n_comms, nodes_per_comm, p):
 
    return G
 
-def stochastic_block_model(n_comms, nodes_per_comm, p_in, p_out):
+def stochastic_block_model(n_comms, nodes_per_comm, p_in, p_out, community_labels = True, positions = True):
 
    p = np.full((n_comms, n_comms), p_out)
    np.fill_diagonal(p, p_in)
 
    G = nx.stochastic_block_model(sizes = [nodes_per_comm] * n_comms, p = p)
-
+   
+   retry = 0
    while nx.number_connected_components(G) > 1:  # Ensure that the graph is connected                               
       G = nx.stochastic_block_model(sizes = [nodes_per_comm] * n_comms, p = p)
+      retry += 1
+      if retry > 100:
+         raise Exception("Could not generate a connected graph")
+
+   # Add community labels to nodes
+   if community_labels:
+      for i in range(n_comms):
+         for node in range(i * nodes_per_comm, (i + 1) * nodes_per_comm):
+            G.nodes[node]["community"] = i
+   
+   # Add node positions as attributes
+   if positions:
+      pos = nx.kamada_kawai_layout(G)
+      nx.set_node_attributes(G, pos, 'pos')
 
    return G
 
