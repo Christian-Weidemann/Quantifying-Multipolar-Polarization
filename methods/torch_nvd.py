@@ -22,6 +22,9 @@ def make_tensor(G, df):
    # Normalize opinions (columns of df) to sum to 1, fill NaNs with 0 (the case of zero-sum column)
    df = df.div(df.sum(), axis=1).fillna(0)
 
+   # Normalize rows of df
+   # df = df.div(df.sum(axis = 1), axis = 0)
+
    edge_index = [[], []]
    edge_attribute_names = list(list(G.edges(data = True))[0][2].keys())
    edge_attr = []
