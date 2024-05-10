@@ -1,9 +1,21 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
+title: Quantifying Multipolar Polarization
+message: 'If you use this software, please cite it as below.'
+type: software
 authors:
   - family-names: Weidemann
     given-names: Christian
-title: "Quantifying Multipolar Polarization"
-
-date-released: 2024-02-07
-url: "https://github.com/Christian-Weidemann/Quantifying-Multipolar-Polarization"
+repository-code: >-
+  https://github.com/Christian-Weidemann/Quantifying-Multipolar-Polarization
+abstract: >-
+  Comparing several methods of generalizing GE distance to
+  multipolar opinion networks using synthetically generated
+  network data for comparing the utility provided by each
+  method and whether it fulfills desired properties.
+keywords:
+  - Networks
+  - Polarization
+  - Opinions
+  - Multipolar
+license: MIT
+date-released: '2024-02-07'

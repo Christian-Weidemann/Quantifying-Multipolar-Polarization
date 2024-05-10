@@ -1,5 +1,5 @@
 """
-A modified version of /resources/torch_nvd/torch_nvd.py, originally provided by Michele Coscia. 
+A modified and expanded version of /resources/torch_nvd/torch_nvd.py, originally provided by Michele Coscia. 
 """
 
 import torch, torch_geometric
@@ -46,7 +46,7 @@ def make_tensor(G, df):
 def _Linv(tensor):
    """
    Compute the pseudo-inverse of the Laplacian.
-   Not by me.
+   Provided by Michele Coscia.
    """
    L_ei, Lew = torch_geometric.utils.get_laplacian(tensor.edge_index)
    L = torch_geometric.utils.to_dense_adj(edge_index = L_ei, edge_attr = Lew)[0]
@@ -56,7 +56,7 @@ def _Linv(tensor):
 def _er(tensor, Linv):
    """
    Compute the effective resistance matrix.
-   Not by me.
+   Provided by Michele Coscia.
    """
    if Linv is None:
       Linv = _Linv(tensor)
@@ -67,7 +67,7 @@ def _er(tensor, Linv):
 def _pairwise_distances(tensor, Linv):
    """
    Compute the pairwise GE distance between each pair of opinion dimensions.
-   Not by me.
+   Provided by Michele Coscia.
    """
    distances = torch.zeros((tensor.node_vects.shape[1], tensor.node_vects.shape[1])).to(device)
    for i in range(tensor.node_vects.shape[1]):
@@ -93,7 +93,7 @@ def ge(src, trg, Linv):
 def pairwise_average(tensor):
    """
    Average GE distance between each pair of opinion dimensions.
-   Not by me.
+   Provided by Michele Coscia.
    """
    Linv = _Linv(tensor)
    distance_matrix = _pairwise_distances(tensor, Linv)
@@ -149,6 +149,7 @@ def total_variation(tensor, Linv = None):
    This is from Martin-Gutierrez et al. 2023.
    As is, it is simplistic and ignores G. But it makes full use of the opinion data we have.
    Alternatively, we can throw out most of o and use G to infer opinion scores rather than using the actual ones.
+   Provided by Michele Coscia.
    """
    norm_factor = tensor.node_vects.shape[0] / tensor.node_vects.shape[1]
    return torch.trace(torch.cov(tensor.node_vects)).cpu().numpy() / norm_factor

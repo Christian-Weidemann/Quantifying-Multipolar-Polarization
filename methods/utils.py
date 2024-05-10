@@ -1,3 +1,7 @@
+"""
+A modified and expanded version of /resources/torch_nvd/utils.py, originally provided by Michele Coscia. 
+"""
+
 import random
 import numpy as np
 import pandas as pd
@@ -63,7 +67,7 @@ def save_figure(figure_name, figure_folder=None, overwrite=False, dpi=600):
 
 def ideo_make_p(p_out, n_comms, intercon):
    """
-   not by me
+   Provided by Michele Coscia.
    """
    p = np.full((n_comms, n_comms), p_out)
    np.fill_diagonal(p, 0)                                                # Save the sum of p entries, this must be constant to ensure same expected # of edges
@@ -75,7 +79,7 @@ def ideo_make_p(p_out, n_comms, intercon):
 
 def ideo_make_G(n_comms, nodes_per_comm, p):
    """
-   not by me
+   Provided by Michele Coscia.
    """
    comm = nx.complete_graph(nodes_per_comm)
    G = nx.Graph()
@@ -145,7 +149,7 @@ def make_community_graph(n_comms, nodes_per_comm):
 # But this might lose the multidimensional aspect (closer communities should have lower opinion difference)
 def ideo_make_o(n_comms, nodes_per_comm, shift):
    """
-   not by me
+   Provided by Michele Coscia.
    """
    o = pd.DataFrame()
    scale = 0.1
