@@ -46,6 +46,28 @@ def cmap(cmap_type, n=10, as_colormap=True, shuffle=True):
    
    return cmap
 
+def share_axes(axes, sharex=True, sharey=True):
+   """
+   Share axes in a grid of subplots.
+   from https://stackoverflow.com/a/77862871
+   """
+   if isinstance(axes, np.ndarray):
+        axes = axes.flat  # from plt.subplots
+   elif isinstance(axes, dict):
+        axes = list(axes.values())  # from plt.subplot_mosaic
+   else:
+        axes = list(axes)
+   ax0 = axes[0]
+   for ax in axes:
+      if sharex:
+         ax.sharex(ax0)
+         if not ax.get_subplotspec().is_last_row():
+               ax.tick_params(labelbottom=False)
+      if sharey:
+         ax.sharey(ax0)
+         if not ax.get_subplotspec().is_first_col():
+               ax.tick_params(labelleft=False)
+
 
 def save_figure(figure_name, figure_folder=None, overwrite=False, dpi=600):
 

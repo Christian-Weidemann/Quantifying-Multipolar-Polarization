@@ -56,12 +56,13 @@ def _Linv(tensor):
 def _er(tensor, Linv):
    """
    Compute the effective resistance matrix.
-   Provided by Michele Coscia.
+   Provided by Michele Coscia, slightly modified.
    """
    if Linv is None:
       Linv = _Linv(tensor)
    pinv_diagonal = torch.diagonal(Linv)
-   return pinv_diagonal.unsqueeze(0) +  pinv_diagonal.unsqueeze(1) - 2 * Linv
+   effective_resistance = pinv_diagonal.unsqueeze(0) +  pinv_diagonal.unsqueeze(1) - 2 * Linv
+   return effective_resistance
 
 
 def _pairwise_distances(tensor, Linv):
@@ -101,9 +102,10 @@ def pairwise_average(tensor):
    return torch.sqrt(distance_matrix.sum() / binom(tensor.node_vects.shape[1], 2)).cpu().numpy().tolist()
 
 
-def _manifold(tensor, embedding):
+def _manifold(tensor, embedding, Linv = None):
 
-   Linv = _Linv(tensor)
+   if Linv is None:
+      Linv = _Linv(tensor)
 
    # Converting the embedding to a tensor and moving it to the device
    embedding = torch.tensor(embedding).double().to(device)  
@@ -118,16 +120,37 @@ def PC_manifold(tensor):
    reducer = PCA(n_components = 1, svd_solver = "arpack")
    embedding = reducer.fit_transform(opinion_matrix)
    return _manifold(tensor, embedding)
-   
+
 def MDS_manifold(tensor):
+   """
+   Absolute Metric Multidimensional Scaling (MDS) using euclidean distance between nodes.
+   """
+   Linv = _Linv(tensor)
+
    opinion_matrix = tensor.node_vects.cpu().numpy()
+
    # Ignoring warnings while fitting MDS models
    with warnings.catch_warnings():  
       warnings.simplefilter('ignore') 
       reducer = MDS(n_components = 1, n_init = 1, dissimilarity = "euclidean")
       embedding = reducer.fit_transform(opinion_matrix)
-   return _manifold(tensor, embedding)
+   return _manifold(tensor, embedding, Linv)
 
+def MDS_effective_resistance_manifold(tensor):
+   """
+   Absolute Metric Multidimensional Scaling (MDS) using effective resistance between nodes.
+   Not working as expected for some reason.
+   """
+   Linv = _Linv(tensor)
+
+   effective_resistance_matrix = _er(tensor, Linv).cpu().numpy()
+
+   # Ignoring warnings while fitting MDS models
+   with warnings.catch_warnings():  
+      warnings.simplefilter('ignore') 
+      reducer = MDS(n_components = 1, n_init = 1, dissimilarity = "precomputed")
+      embedding = reducer.fit_transform(effective_resistance_matrix)
+   return _manifold(tensor, embedding, Linv)
 
 def avg_dist_to_mean(tensor):
    """
@@ -147,9 +170,15 @@ def avg_dist_to_mean(tensor):
 def total_variation(tensor, Linv = None):
    """
    This is from Martin-Gutierrez et al. 2023.
-   As is, it is simplistic and ignores G. But it makes full use of the opinion data we have.
-   Alternatively, we can throw out most of o and use G to infer opinion scores rather than using the actual ones.
-   Provided by Michele Coscia.
+
+   There is no need for norm_factor, since trace_cov is normalized alrready.
+
    """
-   norm_factor = tensor.node_vects.shape[0] / tensor.node_vects.shape[1]
-   return torch.trace(torch.cov(tensor.node_vects)).cpu().numpy() / norm_factor
+   
+   trace_cov = torch.trace(torch.cov(tensor.node_vects)).cpu().numpy()
+
+   # norm_factor = tensor.node_vects.shape[0] / tensor.node_vects.shape[1]
+
+   print(f"trace_cov: {trace_cov}, tensor.node_vects.shape: {tensor.node_vects.shape}")
+   
+   return trace_cov #/ norm_factor

@@ -14,7 +14,7 @@ metrics = [('APD', nvd.pairwise_average),
            ('ADM', nvd.avg_dist_to_mean), 
            ('PC', nvd.PC_manifold), 
            ('MDS', nvd.MDS_manifold),
-           ('TV', nvd.total_variation)] 
+           ('TV', nvd.total_variation)]
 
 local_tests = [('Chains', nx.path_graph), 
                 ('Complete graphs', nx.complete_graph),
