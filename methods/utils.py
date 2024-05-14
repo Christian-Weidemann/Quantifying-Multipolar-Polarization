@@ -9,6 +9,7 @@ import networkx as nx
 from scipy.stats import truncnorm
 import seaborn as sns
 from matplotlib.colors import ListedColormap
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import os
 
@@ -25,6 +26,11 @@ def cmap(cmap_type, n=10, as_colormap=True, shuffle=True):
 
    if cmap_type == "bgr":
       colors = [blue, green, red]
+      cmap = sns.blend_palette(colors, n_colors=len(colors), as_cmap=as_colormap)
+
+   elif cmap_type == "bpr":
+      purple = mpl.colors.rgb2hex(sns.blend_palette([blue, red], as_cmap=True)(0.5))
+      colors = [blue, purple, red]
       cmap = sns.blend_palette(colors, n_colors=len(colors), as_cmap=as_colormap)
    
    elif cmap_type == "br":
@@ -128,8 +134,9 @@ def stochastic_block_model(n_comms, nodes_per_comm, p_in, p_out, community_label
 
    G = nx.stochastic_block_model(sizes = [nodes_per_comm] * n_comms, p = p)
    
+   # Ensure that the graph is connected
    retry = 0
-   while nx.number_connected_components(G) > 1:  # Ensure that the graph is connected                               
+   while nx.number_connected_components(G) > 1:                                 
       G = nx.stochastic_block_model(sizes = [nodes_per_comm] * n_comms, p = p)
       retry += 1
       if retry > 100:

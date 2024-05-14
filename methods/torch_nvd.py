@@ -20,7 +20,7 @@ def make_tensor(G, df):
       raise ValueError("Graph must have at least two nodes")
    
    # Normalize opinions (columns of df) to sum to 1, fill NaNs with 0 (the case of zero-sum column)
-   df = df.div(df.sum(), axis=1).fillna(0)
+   # df = df.div(df.sum(), axis=1).fillna(0)
 
    # Normalize rows of df
    # df = df.div(df.sum(axis = 1), axis = 0)
@@ -175,10 +175,10 @@ def total_variation(tensor, Linv = None):
 
    """
    
-   trace_cov = torch.trace(torch.cov(tensor.node_vects)).cpu().numpy()
+   trace_cov = torch.trace(torch.cov(tensor.node_vects.T)).cpu().numpy()  # using transpose of opinion matrix, since cov() expects variables as rows and observations as columns
 
    # norm_factor = tensor.node_vects.shape[0] / tensor.node_vects.shape[1]
 
-   print(f"trace_cov: {trace_cov}, tensor.node_vects.shape: {tensor.node_vects.shape}")
+   # print(f"trace_cov: {trace_cov}")  # , tensor.node_vects.shape: {tensor.node_vects.shape}, norm_factor: {norm_factor}
    
    return trace_cov #/ norm_factor
