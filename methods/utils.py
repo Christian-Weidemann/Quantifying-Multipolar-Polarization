@@ -8,8 +8,7 @@ import pandas as pd
 import networkx as nx
 from scipy.stats import truncnorm
 import seaborn as sns
-from matplotlib.colors import ListedColormap
-import matplotlib as mpl
+from matplotlib.colors import ListedColormap, rgb2hex
 import matplotlib.pyplot as plt
 import os
 
@@ -29,7 +28,7 @@ def cmap(cmap_type, n=10, as_colormap=True, shuffle=True):
       cmap = sns.blend_palette(colors, n_colors=len(colors), as_cmap=as_colormap)
 
    elif cmap_type == "bpr":
-      purple = mpl.colors.rgb2hex(sns.blend_palette([blue, red], as_cmap=True)(0.5))
+      purple = rgb2hex(sns.blend_palette([blue, red], as_cmap=True)(0.5))
       colors = [blue, purple, red]
       cmap = sns.blend_palette(colors, n_colors=len(colors), as_cmap=as_colormap)
    

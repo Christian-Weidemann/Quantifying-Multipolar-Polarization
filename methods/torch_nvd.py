@@ -121,7 +121,7 @@ def PC_manifold(tensor):
    embedding = reducer.fit_transform(opinion_matrix)
    return _manifold(tensor, embedding)
 
-def MDS_manifold(tensor):
+def MDS_manifold(tensor, return_embedding=False):
    """
    Absolute Metric Multidimensional Scaling (MDS) using euclidean distance between nodes.
    """
@@ -134,7 +134,11 @@ def MDS_manifold(tensor):
       warnings.simplefilter('ignore') 
       reducer = MDS(n_components = 1, n_init = 1, dissimilarity = "euclidean")
       embedding = reducer.fit_transform(opinion_matrix)
-   return _manifold(tensor, embedding, Linv)
+
+   if return_embedding:
+      return _manifold(tensor, embedding, Linv), embedding
+   else:
+      return _manifold(tensor, embedding, Linv)
 
 def MDS_effective_resistance_manifold(tensor):
    """

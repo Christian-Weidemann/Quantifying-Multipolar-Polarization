@@ -17,7 +17,7 @@ metrics = [('APD', nvd.pairwise_average),
            ('TV', nvd.total_variation)]
 
 local_tests = [('Chains', nx.path_graph), 
-                ('Complete graphs', nx.complete_graph),
+                ('Complete', nx.complete_graph),
                 ('Communities', utils.make_community_graph)]
 
 local_num_nodes_range = range(6, 13, 2)
